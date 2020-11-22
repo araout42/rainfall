@@ -1,0 +1,18 @@
+int v(void) 
+{
+		char	*s;
+		fgets(s, 512, stdin);
+		printf(s);
+		int x = 0;
+		if (x == 64) {
+				fwrite("Wait what?!\n", 1, 12, stdout);
+				system("/bin/sh");
+		}
+		return 0;
+}
+
+int main(int argc, char ** argv) 
+{
+		v();
+		return (0);
+}

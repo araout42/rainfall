@@ -1,0 +1,22 @@
+int n(void)
+{
+    return(system("/bin/cat /home/user/level7/.pass"));
+}
+
+int m(void) {
+    return(puts("Nope"));
+}
+
+int main(int ac, char **av)
+{
+	char *a;
+	char *b;
+
+	a = malloc(64);
+	b = malloc(4);
+	*(unsigned int *)b = (unsigned int)&m;
+	strcpy(str, argv[1]);
+	int (*f)(void) = *(unsigned int *)b;
+	(*f)();
+	return (b);
+}

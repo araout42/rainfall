@@ -1,0 +1,38 @@
+char *auth;
+char *service;
+
+int main (void)
+{
+	char cmd[5];
+	char a[2];
+	char s[125];
+
+	while (true)
+	{
+		printf("%p, %p", auth, service);
+		if (fgets(cmd, 128, stdin) == NULL)
+			return (0);
+		if (strncmp(cmd, "auth ", 5) == 0)
+		{
+			auth = malloc(4);
+			auth[0] = 0;
+			if (strlen(a) < 32) {
+				strcpy((char *)auth, a);
+			}
+		}
+		if (strncmp(cmd, "reset", 5) == 0) {
+			free(auth);
+		}
+		if (strncmp(cmd, "service", 6) == 0) {
+			service = strdup(s);
+		}
+		if (strncmp(cmd, "login", 5) == 0) {
+			if (auth[32] == 0) {
+				fwrite("Password:\n", 1, 10, stdout);
+			} else {
+				system("/bin/sh");
+			}
+		}
+	}
+	return (0);
+}

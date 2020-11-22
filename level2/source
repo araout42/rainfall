@@ -1,0 +1,27 @@
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int p(void) 
+{
+	char 	*s;
+	void	*a;
+
+	fflush(stdout);
+	gets(s);
+	if (((unsigned int)a & 0xb0000000) == 0xb0000000) 
+	{
+		printf("(%p)\n", a);
+		exit(1);
+	}
+	puts(s);
+	strdup(s);
+	return (0);
+}
+
+
+int	main(void)
+{
+	p();
+	return (0);
+}

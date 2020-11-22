@@ -1,0 +1,18 @@
+void o()
+{
+	system("/bin/sh");
+	exit(1);
+}
+
+void n()
+{
+	char s[512];
+	fgets(s, 512, stdin);
+	print(s);
+	exit(1)
+}
+
+int main(void)
+{
+	n();
+}

