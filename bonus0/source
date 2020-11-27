@@ -1,0 +1,29 @@
+char *p(char *s, char *p)
+{
+	char buf[4096];
+
+	puts(p);
+	read(0, &buf, 4096);
+	*strchr(buf, '\n') = 0;
+	return (strncpy(s, buf, 20));
+}
+
+void pp(char *s)
+{
+	char s1[20];
+	char s2[28]
+	p(s1, " - ");
+	p(s2, " - ");
+	strcpy(s, s1);
+	s[41] = 32;
+	strcat(str, s2);
+	return (str);
+}
+
+int main (void)
+{
+	char s[42]
+	pp(s);
+	puts(s);
+	return (0);
+}

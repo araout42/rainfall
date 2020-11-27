@@ -1,6 +1,6 @@
 We dissasemble the program and find a function 'p'
 
-it call thge function gets that we can overflow and use for the exploit 
+it call the function gets that we can overflow and use for the exploit 
 
 we also have this comp
 wich block us from directly returning to libc or shellcode by checking the address doesnt start by 0xb**

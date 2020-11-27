@@ -14,7 +14,7 @@ so we try
 200
 
 it works
-to write inside the adress in the beggining of the string we use %n as it's 4 bytes
+to write inside the adress in the beggining of the string we use %n as the offset of our input is 4 
 we will use %4$n
 
 %n will write the number of bytes outputed as int in the adress given

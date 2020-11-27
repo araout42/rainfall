@@ -1,0 +1,47 @@
+int id = 0;
+
+int greetuser(char *av)
+{
+	char *s;
+	if (id == 1)
+	{
+		s = strdup("Hyvaa paivaa");
+	}
+	else if (id == 2)
+	{
+		s = strdup("Goedemiddag! ");
+	}
+	else if (id == 0)
+	{
+		s = strdup("hello" );
+	}
+	strcat(s, av);
+	return (puts(s));
+}
+
+
+int main(int ac, char **av)
+{
+	if (ac == 3)
+	{
+		char s1[19];
+		char s2[32];
+		char *lang = getenv("LANG");
+
+		memset(str, 0, 19);
+		strncpy(s1, av[1], 19)
+		strncpy(s2, av[2], 32);
+		if(lang != NULL)
+		{
+			if (memcmp(lang, "fi", 2) == 0)
+			{
+				id = 2;
+			}
+			else if (memcmp(lang, "nl", 2) == 0)
+				id = 2;
+			return (greetuser(av[1]));
+		}
+		return (greetuser(av[1]));
+	}
+	return (1);
+}

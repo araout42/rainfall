@@ -1,0 +1,17 @@
+in this program take 1 arguemtn, 
+
+it use fopen on the password,
+then it read it's data in a buffer,
+then it put a \0 in the position we input with atoi
+then it read the file again in another buffer
+
+it perform strcmp on the first buffer holding the password and our input, if there is no difference it call system("/bin/sh")
+
+so to exploit this we will try to do ./bonus3 "" so our input just hold a "\0" and 
+strcmp can only return 0
+
+bonus3@RainFall:~$ ./bonus3 ''
+$ cd ../end ; cat .pass
+3321b6f81659f9a71c76616f606e4b50189cecfea611393d5d649f75e157353c
+
+
